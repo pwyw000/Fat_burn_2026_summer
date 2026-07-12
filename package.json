@@ -1,0 +1,14 @@
+{
+  "name": "fat-burn-2026-summer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Daily fat-loss plan email from personal logs and screenshots",
+  "type": "module",
+  "scripts": {
+    "send-email": "node scripts/send-fat-loss-email.mjs",
+    "send-email:dry": "node scripts/send-fat-loss-email.mjs --dry-run"
+  },
+  "dependencies": {
+    "nodemailer": "^6.10.1"
+  }
+}
