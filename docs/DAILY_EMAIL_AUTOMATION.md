@@ -1,34 +1,93 @@
-# 每日早晨 Automation 指令（存档）
+# 每日早晨 Automation 指令
 
-你只上传截图；本 Agent 负责 CSV + 计划 + 邮件。
+你只上传截图；本 Agent 负责 CSV + 可执行饮食计划 + 邮件。  
+触发时间：**美东每天 08:00**。
 
-## 流程（每次触发必须按序完成）
+## 截图目录（必须用这些精确路径，区分大小写）
 
-1. **读档案与规则**  
-   `docs/PROFILE.md`、`docs/WEEK1_PLAN.md`、`docs/ADJUSTMENT_RULES.md`，以及既有 `logs/daily_log.csv`、`logs/weekly_review.csv`、`logs/plans/` 近期计划。
+云端 Linux **区分大小写**。仓库里实际目录是：
 
-2. **扫描截图（用户唯一输入）**  
-   查看 `logs/withings/`、`logs/garmin/`、`logs/whoop/`、`logs/meals/`、`logs/training/` 中相对上次运行的新文件与最近约 7 天文件。阅读图片内容，提取数字与事实。
+| 路径 | 内容 |
+|---|---|
+| `logs/Withings/` | 体重 / BMI / 体脂 |
+| `logs/Garmin/` | 有氧、跑步、活动（**不是** `logs/garmin/`） |
+| `logs/Whoop/` | 恢复 / 睡眠 |
+| `logs/meals/` | **Muscle Booster → Nutrition 标签页** 当日汇总截图（**不要上传食物照片**；优先 PNG/JPG） |
+| `logs/training/` | 阻力训练 |
+
+扫描时：`ls`/`find` 这些精确路径；把目录下**所有图片**（含文件名里有特殊空格/Unicode 的 macOS 截图）都打开阅读。禁止只搜小写 `garmin`。
+
+## 流程（每次按序完成）
+
+1. **读规则**  
+   `docs/PROFILE.md`、`docs/WEEK1_PLAN.md`、`docs/ADJUSTMENT_RULES.md`，以及 CSV 与 `logs/plans/` 近期计划。
+
+2. **扫描截图**  
+   列出上述五个目录全部文件；阅读新文件与近 7 天文件。  
+   - **Garmin：** 是否完成、运动类型、时长分钟、距离、配速、平均心率、卡路里（能读到的都写入 notes）。  
+   - **`logs/meals/`（Muscle Booster Nutrition）：** 总 kcal、蛋白 / 碳水 / 脂肪 g → 写入 CSV `nutrition_*` 列。
 
 3. **维护 CSV（用户不手改）**  
-   - 按美东日期更新/追加 `logs/daily_log.csv`：体重、BMI、体脂、阻力是否完成、有氧是否完成与分钟、WHOOP 备注、蛋白是否大致达标、notes。  
-   - 截图读不清的字段留空，不要编造。  
-   - 若今天是周日（美东）：按调整规则汇总本周，写入/更新 `logs/weekly_review.csv`（含 case_code A–F 与 next_week_change）。  
-   - 将 CSV 与当日计划文件的变更提交并推送到当前分支（便于下次继续）。
+   - 按美东日期 upsert `logs/daily_log.csv`。  
+   - Garmin 有活动 → `cardio_done=yes`，`cardio_minutes` 填总分钟（可四舍五入）。  
+   - Muscle Booster Nutrition 截图 → 提取并写入：`nutrition_kcal`、`nutrition_protein_g`、`nutrition_carbs_g`、`nutrition_fat_g`（能读到的都填）。  
+   - `protein_ok`：`nutrition_protein_g` ≥ **160** → `yes`；< 160 → `no`；无截图 → 留空。  
+   - 读不清的字段留空，**不要保留与截图矛盾的旧值**。  
+   - 周日（美东）：写 `logs/weekly_review.csv`。  
+   - 提交并推送 CSV + 计划。
 
-4. **检索网络减脂建议**  
-   用可信来源补充「维持瘦体重、温和缺口、蛋白、恢复」等要点，必须按个人截图与规则裁剪，禁止照搬通用极端节食。
+4. **检索网络减脂建议**（可信来源），按个人数据裁剪；禁止极端节食。
 
-5. **生成当日计划**  
-   写入 `logs/plans/YYYY-MM-DD.md`（美东日期），结构：  
-   数据摘要 → 今日主旋钮（只改一个）→ 饮食要点 → 训练建议 → 风险 → 明日一句行动。  
-   原则：维持 BMI / 降体脂%；一次一个主旋钮；WHOOP 差先减练（情况 F）。
+5. **生成当日计划** → `logs/plans/YYYY-MM-DD.md`  
+   必须含：**截至昨日减脂效果** → 数据摘要（**含 Garmin**）→ 今日主旋钮 → **可执行饮食（见下）** → 训练 → 风险 → 明日一句。  
+   硬目标：约 2 个月体脂 → **12%**；体重 **≥ 160 lb**。
 
-6. **发信**  
-   `npm install`（如需要）后执行发信脚本，收件人 `pwyw000@gmail.com`。  
-   环境变量：`GMAIL_USER`、`GMAIL_APP_PASSWORD`（可选 `EMAIL_TO`）。  
-   先确保计划文件已写好，再发送该文件内容。
+6. **发信**到 `pwyw000@gmail.com`（`GMAIL_USER` / `GMAIL_APP_PASSWORD`）。
 
-## 缺数据时
+## 截至昨日减脂效果（邮件第 1 项，必写）
 
-缺某类截图：CSV 留空 + 邮件标明缺什么 + 仍给出可执行的保守建议（优先执行与恢复，不猛加缺口）。
+用开局基线（178.2 lb / 体脂 20.1%）与 `daily_log.csv` + 截图，写一段**总结到昨日（美东昨天）为止**的减脂效果，并明确点评三个环节的好坏：
+
+| 环节 | 看什么 | 「好」示例 | 「不好」示例 |
+|---|---|---|---|
+| **饮食** | Muscle Booster Nutrition 昨日合计：蛋白 g、总 kcal 是否落在训练日档位 | 蛋白 ≥160 g、热量与 Garmin 日类型匹配 | 缺 Nutrition 截图、蛋白 <160 g、热量明显过高/过低 |
+| **运动（有氧）** | Garmin：频次、时长、是否完成计划有氧 | 有氧按时完成、强度合理 | 连续缺有氧、或过猛影响恢复 |
+| **锻炼（阻力）** | training 截图：周次数是否接近 5× | 多数日有阻力、不随意跳练 | 阻力缺勤多、或恢复差仍硬练 |
+
+写法要求：
+
+- 先一句**效果总览**：体重 / 体脂相对开局或相对上周怎么变（缺数据就写「暂无法判断趋势」+ 缺什么）。  
+- 再各用一句标出：**哪个环节做得好、哪个做得不好**（至少点名一好一差；三者都好/都差也要说清）。  
+- 最后一句：**今天应优先补哪个弱项**（与「今日主旋钮」一致，仍只改一个主旋钮）。  
+- 数据不足时不要编造：写明缺 Withings / Garmin / Muscle Booster Nutrition（`logs/meals/`）/ training 哪一类。
+
+## 饮食输出硬性要求（邮件里必须做到）
+
+禁止只写「多吃蛋白」「主食少一点」。每一餐必须写成**购物/装盘清单**：
+
+- 食材名称 + **具体用量**（克 / 盎司 / 个 / 杯 / 汤匙 / 包装份数）
+- 预估蛋白 g 与热量 kcal（大约即可）
+- 优先：Trader Joe’s / Whole Foods / Costco / 家里老人做的菜，写出「拿什么、装多少」
+- 若有 `logs/meals/` 的 Muscle Booster Nutrition 截图：在邮件**数据摘要**写出昨日实际 kcal / 蛋白 / 碳水 / 脂肪；在**今日饮食清单**写明相对缺口怎么补（例：昨日蛋白 142 g → 今日各餐多加 1 勺蛋白粉或 +50 g 鸡胸）
+
+## Muscle Booster Nutrition 截图（`logs/meals/`）
+
+用户**不再上传食物照片**，只上传 App 内 **Nutrition 标签页** 的日汇总截图。
+
+Agent 必须尝试读取：
+
+| 字段 | CSV 列 | 用途 |
+|---|---|---|
+| 总热量 | `nutrition_kcal` | 对照训练日档位（休息 ~2,000 / 轻松有氧 ~2,100–2,200 / 长跑 ~2,300–2,500） |
+| 蛋白 | `nutrition_protein_g` | 目标 160–180 g；驱动 `protein_ok` |
+| 碳水 | `nutrition_carbs_g` | 长跑日是否补足 |
+| 脂肪 | `nutrition_fat_g` | 辅助判断热量结构 |
+
+读失败：邮件写明文件名与原因；不得编造数值。仍给出保守可执行饮食清单。
+
+模板见 `docs/WEEK1_PLAN.md` 第 2 节；每日邮件要给出**完整一天**（早/午/晚/加餐），不是原则口号。
+
+## 缺数据
+
+缺某类截图：CSV 留空 + 邮件标明缺什么 + 仍给保守可执行建议。  
+若 `logs/Garmin/` 有文件却读失败：邮件必须写明文件名与失败原因，不得写成「今日无有氧」。

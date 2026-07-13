@@ -1,26 +1,30 @@
 # Logs — 只上传截图
 
-你**只需要**把截图丢进对应文件夹。  
-`daily_log.csv` / `weekly_review.csv` 由每日早晨的 Agent **根据截图自动维护**，不必手填。
+你**只负责**把截图放进对应文件夹。CSV 与每日计划由早晨 Agent 自动维护。
 
-## 文件夹
+## 文件夹（名称请保持一致，区分大小写）
 
 | 文件夹 | 放什么 |
 |---|---|
-| `withings/` | 体重、BMI、体脂% 截图 |
-| `garmin/` | 有氧/活动截图 |
-| `whoop/` | 恢复、睡眠、压力截图 |
-| `meals/` | 饮食、外卖、营养标签截图 |
-| `training/` | Muscle Booster / 阻力训练截图 |
-| `plans/` | 每日计划正文（Agent 自动写入） |
+| `Withings/` | 体重、BMI、体脂% |
+| `Garmin/` | 有氧 / 跑步 / 活动（请用这个大写 G 目录） |
+| `Whoop/` | 恢复、睡眠 |
+| `meals/` | **Muscle Booster → Nutrition 标签页** 当日汇总截图（**不再上传食物照片**） |
+| `training/` | 阻力训练 |
+| `plans/` | Agent 生成的每日计划 |
 
-命名建议：`YYYY-MM-DD` 或 `YYYY-MM-DD-描述.png`（例如 `2026-07-12-morning.png`）。
+### `meals/` 上传说明（Muscle Booster Nutrition）
 
-## Agent 自动维护的 CSV
+1. 在 Muscle Booster App 打开 **Nutrition** 标签页。  
+2. 确保屏幕显示**当日（或昨日）合计**：总热量 kcal、蛋白 / 碳水 / 脂肪 g（能看到的都截进去）。  
+3. 每晚睡前或次日早晨上传一张截图到 `logs/meals/`。  
+4. 命名建议：`YYYY-MM-DD-nutrition.png`。优先 PNG/JPG；避免 HEIC。
 
-| 文件 | 谁写 | 用途 |
-|---|---|---|
-| `daily_log.csv` | Agent 每日从截图提取 | 体重/BMI/体脂、训练、恢复、蛋白粗判、备注 |
-| `weekly_review.csv` | Agent 每周日汇总 | 周均值、情况码 A–F、下周改动 |
+Agent 从该截图写入 `daily_log.csv` 的 `nutrition_*` 字段，并在邮件里对照目标（蛋白 160–180 g、热量按训练日档位）点评饮食好坏。
 
-若某天某类截图缺失，CSV 对应字段留空，并在当日邮件里标明「缺 XXX 截图」。
+## Agent 自动维护
+
+| 文件 | 用途 |
+|---|---|
+| `daily_log.csv` | 从截图提取的每日数据 |
+| `weekly_review.csv` | 周日汇总 + 情况码 A–F |

@@ -1,12 +1,14 @@
 # Fat Burn 2026 Summer
 
-两月减脂追踪 + **每日早晨邮件计划**。你只需把 Withings / Garmin / WHOOP / 饮食 / 训练截图按类型丢进 `logs/`；CSV 与当日计划由定时 Agent 自动维护，并邮件推送到 `pwyw000@gmail.com`。
+两月减脂追踪 + **每日早晨邮件计划**。你只需把截图丢进 `logs/Withings|Garmin|Whoop|meals|training`；CSV 与当日计划由定时 Agent 自动维护，并邮件推送到 `pwyw000@gmail.com`。
+
+**硬目标：** 约 2 个月体脂 → **12%**；体重 **不得低于 160 lb**。
 
 ## 快速开始
 
-1. 截图放进对应文件夹（见 [logs/README.md](logs/README.md)）——**不用手改 CSV**
-2. 阅读 [docs/WEEK1_PLAN.md](docs/WEEK1_PLAN.md) 与 [docs/ADJUSTMENT_RULES.md](docs/ADJUSTMENT_RULES.md)
-3. 把本仓库推到 GitHub，并在 Cursor Automations 里启用「每日 7:00 美东」任务
+1. 截图放进对应文件夹（见 [logs/README.md](logs/README.md)）——**不用手改 CSV**；`meals/` 只放 **Muscle Booster Nutrition 标签页** 截图（不上传食物照片）
+2. 阅读 [docs/WEEK1_PLAN.md](docs/WEEK1_PLAN.md)（含每餐克数模板）与 [docs/ADJUSTMENT_RULES.md](docs/ADJUSTMENT_RULES.md)
+3. Cursor Automation：**美东每天 08:00**（cron `0 8 * * *`）
 
 ## 本地试发邮件
 
@@ -27,7 +29,7 @@ Cloud Agent 需在 [Cloud Agents 设置](https://cursor.com/dashboard?tab=cloud-
 
 | 路径 | 作用 |
 |---|---|
-| `logs/withings|garmin|whoop|meals|training/` | 分类截图 |
+| `logs/withings|garmin|whoop|meals|training/` | 分类截图（`meals/` = Muscle Booster Nutrition 汇总） |
 | `logs/plans/` | 每日生成的计划正文 |
 | `scripts/send-fat-loss-email.mjs` | Gmail 发信 |
 | `docs/` | 档案、基线计划、调整规则 |
