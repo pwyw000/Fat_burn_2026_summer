@@ -9,6 +9,7 @@
 1. 截图放进对应文件夹（见 [logs/README.md](logs/README.md)）——**不用手改 CSV**；`meals/` 只放 **Muscle Booster Nutrition 标签页** 截图（不上传食物照片）
 2. 阅读 [docs/WEEK1_PLAN.md](docs/WEEK1_PLAN.md)（含每餐克数模板）与 [docs/ADJUSTMENT_RULES.md](docs/ADJUSTMENT_RULES.md)
 3. Cursor Automation：**美东每天 08:00**（cron `0 8 * * *`）
+4. 本机 LaunchAgent：**每天 07:45** 自动 push **截图 + `logs/plans/` + CSV**（不含文档/脚本）。脚本在本机：`scripts/auto-commit-push-logs.sh`
 
 ## 本地试发邮件
 

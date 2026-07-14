@@ -3,5 +3,8 @@ node_modules/
 .env.local
 .DS_Store
 *.log
+logs/auto-push.log
+logs/auto-push.launchd.out.log
+logs/auto-push.launchd.err.log
 .next/
 dist/
