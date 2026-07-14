@@ -18,7 +18,8 @@
 1. 在 Muscle Booster App 打开 **Nutrition** 标签页。  
 2. 确保屏幕显示**当日（或昨日）合计**：总热量 kcal、蛋白 / 碳水 / 脂肪 g（能看到的都截进去）。  
 3. 每晚睡前或次日早晨上传一张截图到 `logs/meals/`。  
-4. 命名建议：`YYYY-MM-DD-nutrition.png`。优先 PNG/JPG；避免 HEIC。
+4. 命名：优先保留 iPhone 默认 **`Screenshot YYYY-MM-DD at H.MM.SS AM|PM.png`**。  
+Agent **按文件名日期时间**归入日志日，不以 App 画面里的日期标签覆盖文件名。
 
 Agent 从该截图写入 `daily_log.csv` 的 `nutrition_*` 字段，并在邮件里对照目标（蛋白 160–180 g、热量按训练日档位）点评饮食好坏。
 
