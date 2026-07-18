@@ -8,7 +8,7 @@
 
 1. 截图放进对应文件夹（见 [logs/README.md](logs/README.md)）——**不用手改 CSV**；`meals/` 只放 **Muscle Booster Nutrition 标签页** 截图（不上传食物照片）
 2. 阅读 [docs/WEEK1_PLAN.md](docs/WEEK1_PLAN.md)（含每餐克数模板）与 [docs/ADJUSTMENT_RULES.md](docs/ADJUSTMENT_RULES.md)
-3. Cursor Automation：**美东每天 08:00**（cron `0 8 * * *`）
+3. Cursor Automation：**美东每天 08:00**（cron `0 8 * * *`）——重建步骤见 [docs/AUTOMATION_SETUP.md](docs/AUTOMATION_SETUP.md)；提示词 [docs/AUTOMATION_PROMPT.md](docs/AUTOMATION_PROMPT.md)
 4. 本机 LaunchAgent：**每天 07:45** 自动 push **截图 + `logs/plans/` + CSV**（不含文档/脚本）。脚本在本机：`scripts/auto-commit-push-logs.sh`
 
 ## 本地试发邮件
@@ -33,4 +33,7 @@ Cloud Agent 需在 [Cloud Agents 设置](https://cursor.com/dashboard?tab=cloud-
 | `logs/withings|garmin|whoop|meals|training/` | 分类截图（`meals/` = Muscle Booster Nutrition 汇总） |
 | `logs/plans/` | 每日生成的计划正文 |
 | `scripts/send-fat-loss-email.mjs` | Gmail 发信 |
+| `docs/AUTOMATION_SETUP.md` | 重建每日 Automation 的步骤 |
+| `docs/AUTOMATION_PROMPT.md` | 粘贴到 Automations 的提示词 |
+| `docs/DAILY_EMAIL_AUTOMATION.md` | Agent 详细执行规则 |
 | `docs/` | 档案、基线计划、调整规则 |
