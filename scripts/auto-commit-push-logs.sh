@@ -14,7 +14,9 @@ ICLOUD_FALLBACK="${HOME}/Library/Mobile Documents/com~apple~CloudDocs/Fat_burn_2
 
 resolve_root() {
   local candidate
-  for candidate in "${GDRIVE_ROOT}" "${LOCAL_FALLBACK}" "${ICLOUD_FALLBACK}"; do
+  # Optional explicit override for non-standard Drive layouts.
+  for candidate in "${FATBURN_REPO:-}" "${GDRIVE_ROOT}" "${LOCAL_FALLBACK}" "${ICLOUD_FALLBACK}"; do
+    [[ -n "${candidate}" ]] || continue
     # Resolve symlink (home shortcut) without requiring cwd inside Drive
     if [[ -L "${candidate}" ]]; then
       candidate="$(readlink "${candidate}" 2>/dev/null || true)"
@@ -24,6 +26,20 @@ resolve_root() {
       return 0
     fi
   done
+
+  # The user may have manually moved the folder elsewhere under Google Drive.
+  # Discover its real location instead of requiring "My Drive/Cursor".
+  if [[ -d "${HOME}/Library/CloudStorage" ]]; then
+    while IFS= read -r candidate; do
+      if [[ -d "${candidate}/.git" ]]; then
+        printf '%s' "${candidate}"
+        return 0
+      fi
+    done < <(
+      /usr/bin/find "${HOME}/Library/CloudStorage" \
+        -maxdepth 8 -type d -name 'Fat_burn_2026_summer' 2>/dev/null
+    )
+  fi
   return 1
 }
 

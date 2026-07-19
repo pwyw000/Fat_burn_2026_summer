@@ -14,6 +14,22 @@ iPhone **Google Drive** App 里：
 
 > 用 **Google Drive App** 找，不是 iPhone「文件」里的 iCloud。
 
+## Automation 如何读取截图
+
+Cursor Cloud Automation **不能直接读取你 Mac 上挂载的 Google Drive**。Automation 的 Repo 仍应设为 GitHub：
+
+```text
+github.com/pwyw000/Fat_burn_2026_summer (main)
+```
+
+正确链路：
+
+```text
+iPhone → Google Drive → Mac LaunchAgent 07:55 commit/push → GitHub main → Automation 08:00
+```
+
+所以不用把 Automation Repo 改成 Google Drive；需要修的是 Mac 上的 autopush 脚本。
+
 ## 在 Mac 上挪一次（Terminal）
 
 先关掉 Cursor / 打开该文件夹的窗口，确认 Google Drive 桌面版已登录且 “My Drive” 已镜像，然后：
@@ -87,6 +103,14 @@ tail -n 40 "${HOME}/Library/Logs/fatburn-autopush.log"
 ```
 
 日志里应有 `ROOT=...GoogleDrive.../Fat_burn_2026_summer`，以及 `Pushed:` 或 `Nothing to commit.`
+
+脚本会自动搜索 `~/Library/CloudStorage` 下手动移动后的
+`Fat_burn_2026_summer`，不要求一定放在 `My Drive/Cursor`。若想强制指定真实路径：
+
+```bash
+FATBURN_REPO="/把 Finder 里的文件夹拖到这里/" \
+  bash "${HOME}/Library/Application Support/fatburn/auto-commit-push-logs.sh"
+```
 
 ## 读取 / LaunchAgent
 
