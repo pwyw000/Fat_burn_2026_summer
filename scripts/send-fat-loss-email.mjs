@@ -5,7 +5,7 @@
  * Required env:
  *   GMAIL_USER          — sender Gmail address (e.g. pwyw000@gmail.com)
  *   GMAIL_APP_PASSWORD  — 16-char Google App Password (spaces optional)
- *   EMAIL_TO            — recipient (default: pwyw000@gmail.com)
+ *   EMAIL_TO            — recipient (default: same as GMAIL_USER)
  *
  * Body source (first match wins):
  *   1) --file <path>
@@ -23,6 +23,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import tls from "node:tls";
 import { fileURLToPath } from "node:url";
 import nodemailer from "nodemailer";
 
@@ -90,16 +91,108 @@ function markdownToPlainishHtml(text) {
   return `<pre style="font-family:ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.5;white-space:pre-wrap;">${escaped}</pre>`;
 }
 
+function stripAngles(messageId) {
+  return String(messageId || "").replace(/^<|>$/g, "");
+}
+
+/** Confirm message landed in Gmail and ensure \\Inbox label (self-SMTP often looks "Sent-only"). */
+async function ensureInboxLabel({ user, pass, messageId }) {
+  const id = stripAngles(messageId);
+  if (!id) return { ok: false, reason: "missing messageId" };
+
+  const sock = await new Promise((resolve, reject) => {
+    const s = tls.connect(
+      { host: "imap.gmail.com", port: 993, server: false, rejectUnauthorized: false },
+      () => resolve(s),
+    );
+    s.on("error", reject);
+  });
+
+  let buf = "";
+  const readLine = () =>
+    new Promise((resolve, reject) => {
+      const tryRead = () => {
+        const idx = buf.indexOf("\r\n");
+        if (idx >= 0) {
+          const line = buf.slice(0, idx);
+          buf = buf.slice(idx + 2);
+          resolve(line);
+          return true;
+        }
+        return false;
+      };
+      if (tryRead()) return;
+      const onData = (d) => {
+        buf += d.toString("utf8");
+        if (tryRead()) sock.off("data", onData);
+      };
+      sock.on("data", onData);
+      setTimeout(() => reject(new Error("IMAP timeout")), 30000);
+    });
+
+  const readUntilTag = async (tag) => {
+    const collected = [];
+    for (;;) {
+      const line = await readLine();
+      collected.push(line);
+      if (line.startsWith(`${tag} `)) return collected;
+    }
+  };
+
+  let n = 1;
+  const cmd = async (c) => {
+    const tag = `A${n++}`;
+    sock.write(`${tag} ${c}\r\n`);
+    return readUntilTag(tag);
+  };
+
+  try {
+    await readLine();
+    const login = await cmd(`LOGIN "${user}" "${pass}"`);
+    if (!login.at(-1).includes("OK")) {
+      return { ok: false, reason: `IMAP login failed: ${login.at(-1)}` };
+    }
+    await cmd('SELECT "[Gmail]/All Mail"');
+
+    let uid = "";
+    for (let i = 0; i < 6 && !uid; i += 1) {
+      const search = await cmd(`UID SEARCH HEADER Message-ID <${id}>`);
+      uid = (search.find((l) => l.startsWith("* SEARCH")) || "")
+        .replace("* SEARCH", "")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)[0];
+      if (!uid) await new Promise((r) => setTimeout(r, 1000));
+    }
+    if (!uid) return { ok: false, reason: "message not found via IMAP yet" };
+
+    await cmd(`UID STORE ${uid} +X-GM-LABELS (\\Inbox)`);
+    const fetch = await cmd(`UID FETCH ${uid} (X-GM-LABELS FLAGS)`);
+    const meta = fetch.find((l) => l.includes("X-GM-LABELS")) || fetch.join(" ");
+    await cmd("LOGOUT");
+    sock.end();
+    return { ok: true, uid, meta };
+  } catch (err) {
+    try {
+      sock.end();
+    } catch {
+      /* ignore */
+    }
+    return { ok: false, reason: err.message || String(err) };
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const dateStr = todayInEastern();
-  const to = process.env.EMAIL_TO || "pwyw000@gmail.com";
-  const subject =
-    process.env.EMAIL_SUBJECT || `减脂计划 · ${dateStr}`;
+  const user = process.env.GMAIL_USER;
+  const to = process.env.EMAIL_TO || user || "pwyw000@gmail.com";
+  const subject = process.env.EMAIL_SUBJECT || `减脂计划 · ${dateStr}`;
   const body = loadBody(args, dateStr);
 
   if (args.dryRun) {
     console.log("--- dry-run ---");
+    console.log(`from: ${user || "(unset GMAIL_USER)"}`);
     console.log(`to: ${to}`);
     console.log(`subject: ${subject}`);
     console.log(`body chars: ${body.length}`);
@@ -107,7 +200,6 @@ async function main() {
     return;
   }
 
-  const user = process.env.GMAIL_USER;
   const pass = (process.env.GMAIL_APP_PASSWORD || "").replace(/\s+/g, "");
   if (!user || !pass) {
     throw new Error(
@@ -129,6 +221,22 @@ async function main() {
   });
 
   console.log(`Sent: ${info.messageId} → ${to}`);
+  console.log(`SMTP: ${info.response || "(no response)"}`);
+  console.log(`accepted: ${(info.accepted || []).join(", ") || "(none)"}`);
+  if (info.rejected?.length) {
+    console.log(`rejected: ${info.rejected.join(", ")}`);
+  }
+  console.log(
+    `Gmail search: rfc822msgid:${stripAngles(info.messageId)}  OR  subject:${subject}`,
+  );
+
+  const verify = await ensureInboxLabel({ user, pass, messageId: info.messageId });
+  if (verify.ok) {
+    console.log(`IMAP verify OK uid=${verify.uid}`);
+    console.log(`IMAP labels: ${verify.meta}`);
+  } else {
+    console.log(`IMAP verify warn: ${verify.reason}`);
+  }
 }
 
 main().catch((err) => {

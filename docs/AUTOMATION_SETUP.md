@@ -50,12 +50,31 @@
 - [ ] 邮箱收到「减脂计划 · YYYY-MM-DD」  
 - [ ] 缺截图时邮件写明缺什么，未编造数字  
 
-## 测试显示 Succeeded 但收不到信
+## 测试显示 Succeeded 但「看不到信」
 
-Cursor **Succeeded** 只表示 Agent 跑完，不等于你在收件箱看到了邮件。
+发信链路是通的：Automation 测试跑已 SMTP `250 OK`，且 IMAP 能在 `pwyw000@gmail.com` 查到邮件（标签含 Inbox + Sent）。
 
-1. 打开测试 run（例：https://cursor.com/agents/bc-ffb257d8-8d67-43f1-88bf-60dc1526fcf8）确认日志里有  
-   `Sent: <…> → pwyw000@gmail.com`  
-2. 在 Gmail 搜：`subject:减脂计划` 或看 **已发送**（自己发给自己时经常只在这里）  
-3. 建议在 Cloud Agents Secrets 把 `EMAIL_TO` 设为 **`pwyw000+fatburn@gmail.com`**（仍进同一收件箱，但更易出现在 Inbox）  
-4. Spam / Promotions 也查一下  
+请用**网页 Gmail**（确认账号是 `pwyw000@gmail.com`）精确搜索：
+
+```
+rfc822msgid:1a841fbf-f03a-59fa-ef6f-4c07ea1ce869@gmail.com
+```
+
+或：
+
+```
+from:"Fat Burn Daily" newer_than:2d
+```
+
+或英文验证主题：
+
+```
+FATBURN_VISIBLE_TEST
+```
+
+常见误判：
+- 手机/Outlook 客户端未同步最新，网页搜得到但 App 暂时没有  
+- 看错 Google 账号  
+- 只在某个 Category / 过滤器视图里找  
+
+脚本现在会在发送后用 IMAP 校验 Message-ID，并强制加上 `\Inbox` 标签。  
