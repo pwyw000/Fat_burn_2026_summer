@@ -1,22 +1,25 @@
 #!/bin/bash
-# Commit + push screenshots/plans/CSV from iCloud Drive workspace.
-# Workspace: ~/Library/Mobile Documents/com~apple~CloudDocs/Fat_burn_2026_summer
+# Commit + push screenshots/plans/CSV from Google Drive workspace.
+# Workspace:
+#   ~/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer
 # Keep a copy of THIS script at:
 #   ~/Library/Application Support/fatburn/auto-commit-push-logs.sh
 
 set -euo pipefail
 cd "${HOME}" || true
 
-ICLOUD_ROOT="${HOME}/Library/Mobile Documents/com~apple~CloudDocs/Fat_burn_2026_summer"
-# Fallback if user still has the old local SSD path or a symlink
+GDRIVE_ROOT="${HOME}/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer"
 LOCAL_FALLBACK="${HOME}/Fat_burn_2026_summer"
+ICLOUD_FALLBACK="${HOME}/Library/Mobile Documents/com~apple~CloudDocs/Fat_burn_2026_summer"
 
-if [[ -d "${ICLOUD_ROOT}/.git" ]]; then
-  ROOT="${ICLOUD_ROOT}"
+if [[ -d "${GDRIVE_ROOT}/.git" ]]; then
+  ROOT="${GDRIVE_ROOT}"
 elif [[ -d "${LOCAL_FALLBACK}/.git" ]]; then
   ROOT="${LOCAL_FALLBACK}"
+elif [[ -d "${ICLOUD_FALLBACK}/.git" ]]; then
+  ROOT="${ICLOUD_FALLBACK}"
 else
-  ROOT="${ICLOUD_ROOT}"
+  ROOT="${GDRIVE_ROOT}"
 fi
 
 RUN_LOG="${HOME}/Library/Logs/fatburn-autopush.log"
@@ -34,7 +37,7 @@ export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=20 -i ${HOME}/.ss
 
 if [[ ! -d "${ROOT}/.git" ]]; then
   echo "ERROR: git repo missing at ${ROOT}"
-  echo "Move the workspace into iCloud Drive (see docs/ICLOUD_WORKSPACE.md)."
+  echo "Move the workspace into Google Drive (see docs/GOOGLE_DRIVE_WORKSPACE.md)."
   exit 1
 fi
 

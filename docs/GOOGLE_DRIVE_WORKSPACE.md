@@ -1,0 +1,70 @@
+# 把工作区放到 Google Drive（手机可存截图）
+
+目标路径（Mac，Google Drive for Desktop）：
+
+```text
+~/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer
+```
+
+iPhone **Google Drive** App 里：
+
+```text
+我的云端硬盘 → Cursor → Fat_burn_2026_summer → logs → Withings / Garmin / Whoop / meals / training
+```
+
+> 用 **Google Drive App** 找，不是 iPhone「文件」里的 iCloud。
+
+## 在 Mac 上挪一次（Terminal）
+
+先关掉 Cursor / 打开该文件夹的窗口，确认 Google Drive 桌面版已登录且 “My Drive” 已镜像，然后：
+
+```bash
+SRC="${HOME}/Fat_burn_2026_summer"
+# 若你已经挪到 iCloud，改用下一行作 SRC：
+# SRC="${HOME}/Library/Mobile Documents/com~apple~CloudDocs/Fat_burn_2026_summer"
+
+GDRIVE_ROOT="${HOME}/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive"
+DST="${GDRIVE_ROOT}/Cursor/Fat_burn_2026_summer"
+
+mkdir -p "${GDRIVE_ROOT}/Cursor"
+
+# 1) 整仓移进 Google Drive（保留 .git）
+mv "${SRC}" "${DST}"
+
+# 2) 可选：家目录快捷方式，旧路径习惯仍可用
+ln -sfn "${DST}" "${HOME}/Fat_burn_2026_summer"
+
+# 3) LaunchAgent 脚本放本地 Application Support（减少云盘权限/TCC 问题）
+mkdir -p "${HOME}/Library/Application Support/fatburn"
+cp "${DST}/scripts/auto-commit-push-logs.sh" \
+  "${HOME}/Library/Application Support/fatburn/auto-commit-push-logs.sh"
+chmod +x "${HOME}/Library/Application Support/fatburn/auto-commit-push-logs.sh"
+
+# 4) 重装 LaunchAgent
+cp "${DST}/scripts/com.fatburn.autopush.plist" \
+  "${HOME}/Library/LaunchAgents/com.fatburn.autopush.plist"
+launchctl unload "${HOME}/Library/LaunchAgents/com.fatburn.autopush.plist" 2>/dev/null || true
+launchctl load "${HOME}/Library/LaunchAgents/com.fatburn.autopush.plist"
+```
+
+在 Finder 打开 Google Drive 路径，确认 `logs/` 下截图在，且文件已下载到本机（不是仅云端）。
+
+## iPhone 保存截图
+
+1. 安装并登录同一账号的 **Google Drive** App  
+2. 截屏 → 分享 → **Drive** / **保存到 Google Drive**  
+   （若没有该选项：分享 → **存储到“文件”** → 浏览里选 **Google Drive**，需已在「文件」里启用 Drive 位置）  
+3. 路径：`我的云端硬盘` → `Cursor` → `Fat_burn_2026_summer` → `logs` → 选子文件夹  
+4. 搜不到就在 Drive App 顶部搜索：`Fat_burn_2026_summer`
+
+建议把 `logs/Withings` 等子文件夹加星标，下次保存更快。
+
+## 读取 / LaunchAgent（下一步再细修）
+
+历史上 Google Drive 路径曾触发 macOS TCC，导致 LaunchAgent 读不到目录。当前策略：
+
+- **仓库**在 Google Drive（方便手机上传）  
+- **autopush 脚本**在 `~/Library/Application Support/fatburn/`（本机）  
+- 脚本用 `git -C "...GoogleDrive.../Fat_burn_2026_summer"`，不把云盘当 cwd  
+
+若早晨仍 push 失败：系统设置 → 隐私与安全性 → 完全磁盘访问权限，给 `/bin/bash`（或你的 Terminal）。日志：`~/Library/Logs/fatburn-autopush.log`。
