@@ -59,7 +59,7 @@ if ! "${GIT}" -C "${ROOT}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
 fi
 
 # Nudge Google Drive to materialize logs if placeholders are online-only.
- /usr/bin/find "${ROOT}/logs" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -print -quit >/dev/null 2>&1 || true
+/usr/bin/find "${ROOT}/logs" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -print -quit >/dev/null 2>&1 || true
 
 "${GIT}" -C "${ROOT}" fetch origin 2>/dev/null || true
 "${GIT}" -C "${ROOT}" checkout main 2>/dev/null || true
