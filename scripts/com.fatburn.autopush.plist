@@ -7,21 +7,21 @@
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>/Users/kejiawu/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer/scripts/auto-commit-push-logs.sh</string>
+    <string>/Users/kejiawu/Library/Application Support/fatburn/auto-commit-push-logs.sh</string>
   </array>
-  <!-- 07:45 local time (America/New_York on this Mac) — before 08:00 cloud email -->
+  <!-- 07:55 local time (America/New_York on this Mac) — before 08:00 cloud email -->
   <key>StartCalendarInterval</key>
   <dict>
     <key>Hour</key>
     <integer>7</integer>
     <key>Minute</key>
-    <integer>45</integer>
+    <integer>55</integer>
   </dict>
   <key>RunAtLoad</key>
   <false/>
   <key>StandardOutPath</key>
-  <string>/Users/kejiawu/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer/logs/auto-push.launchd.out.log</string>
+  <string>/Users/kejiawu/Library/Logs/fatburn-autopush.launchd.out.log</string>
   <key>StandardErrorPath</key>
-  <string>/Users/kejiawu/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer/logs/auto-push.launchd.err.log</string>
+  <string>/Users/kejiawu/Library/Logs/fatburn-autopush.launchd.err.log</string>
 </dict>
 </plist>

@@ -4,14 +4,17 @@
 
 **硬目标：** 约 2 个月体脂 → **12%**；体重 **不得低于 160 lb**。
 
-**本机路径（唯一工作区）：** `~/Fat_burn_2026_summer`（本机 SSD，**不用 Google Drive**）。截图请直接放进该目录下的 `logs/`。
+**工作区（Google Drive，手机可存）：**  
+`~/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer`  
+iPhone：**Google Drive App** → 我的云端硬盘 → `Cursor` → `Fat_burn_2026_summer` → `logs/...`  
+迁移步骤见 [docs/GOOGLE_DRIVE_WORKSPACE.md](docs/GOOGLE_DRIVE_WORKSPACE.md)。
 
 ## 快速开始
 
 1. 截图放进对应文件夹（见 [logs/README.md](logs/README.md)）——**不用手改 CSV**；`meals/` 只放 **Muscle Booster Nutrition 标签页** 截图（不上传食物照片）
 2. 阅读 [docs/WEEK1_PLAN.md](docs/WEEK1_PLAN.md)（含每餐克数模板）与 [docs/ADJUSTMENT_RULES.md](docs/ADJUSTMENT_RULES.md)
 3. Cursor Automation：**美东每天 08:00**（cron `0 8 * * *`）
-4. 本机 LaunchAgent：**每天 07:55** 自动 push **截图 + `logs/plans/` + CSV**（不含文档/脚本）。脚本：`~/Library/Application Support/fatburn/auto-commit-push-logs.sh`
+4. 本机 LaunchAgent：**每天 07:55** 自动 push **截图 + `logs/plans/` + CSV**（不含文档/脚本）。脚本：`~/Library/Application Support/fatburn/auto-commit-push-logs.sh`（仓库在 Google Drive）
 
 ## 本地试发邮件
 
@@ -35,4 +38,5 @@ Cloud Agent 需在 [Cloud Agents 设置](https://cursor.com/dashboard?tab=cloud-
 | `logs/withings|garmin|whoop|meals|training/` | 分类截图（`meals/` = Muscle Booster Nutrition 汇总） |
 | `logs/plans/` | 每日生成的计划正文 |
 | `scripts/send-fat-loss-email.mjs` | Gmail 发信 |
+| `docs/GOOGLE_DRIVE_WORKSPACE.md` | 挪到 Google Drive、手机保存截图 |
 | `docs/` | 档案、基线计划、调整规则 |

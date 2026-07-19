@@ -1,40 +1,160 @@
 #!/bin/bash
-# Commit + push screenshots/plans/CSV from local SSD repo.
-# Workspace: ~/Fat_burn_2026_summer (not Google Drive).
+# Commit + push screenshots/plans/CSV from Google Drive workspace.
+# Workspace:
+#   ~/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer
+# Keep a copy of THIS script at:
+#   ~/Library/Application Support/fatburn/auto-commit-push-logs.sh
 
 set -euo pipefail
 cd "${HOME}" || true
 
-LOCAL_ROOT="${HOME}/Fat_burn_2026_summer"
+GDRIVE_ROOT="${HOME}/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer"
+LOCAL_FALLBACK="${HOME}/Fat_burn_2026_summer"
+ICLOUD_FALLBACK="${HOME}/Library/Mobile Documents/com~apple~CloudDocs/Fat_burn_2026_summer"
+
+resolve_root() {
+  local candidate
+  # Optional explicit override for non-standard Drive layouts.
+  for candidate in "${FATBURN_REPO:-}" "${GDRIVE_ROOT}" "${LOCAL_FALLBACK}" "${ICLOUD_FALLBACK}"; do
+    [[ -n "${candidate}" ]] || continue
+    # Resolve symlink (home shortcut) without requiring cwd inside Drive
+    if [[ -L "${candidate}" ]]; then
+      candidate="$(readlink "${candidate}" 2>/dev/null || true)"
+    fi
+    if [[ -n "${candidate}" && -d "${candidate}/.git" ]]; then
+      printf '%s' "${candidate}"
+      return 0
+    fi
+  done
+
+  # The user may have manually moved the folder elsewhere under Google Drive.
+  # Discover its real location instead of requiring "My Drive/Cursor".
+  if [[ -d "${HOME}/Library/CloudStorage" ]]; then
+    while IFS= read -r candidate; do
+      if [[ -d "${candidate}/.git" ]]; then
+        printf '%s' "${candidate}"
+        return 0
+      fi
+    done < <(
+      /usr/bin/find "${HOME}/Library/CloudStorage" \
+        -maxdepth 8 -type d -name 'Fat_burn_2026_summer' 2>/dev/null
+    )
+  fi
+  return 1
+}
+
+ROOT="$(resolve_root || true)"
+if [[ -z "${ROOT}" ]]; then
+  ROOT="${GDRIVE_ROOT}"
+fi
+
 RUN_LOG="${HOME}/Library/Logs/fatburn-autopush.log"
 GIT="/usr/bin/git"
 DATE_ET="$(TZ=America/New_York /bin/date '+%Y-%m-%d')"
 TS="$(TZ=America/New_York /bin/date '+%Y-%m-%d %H:%M:%S %Z')"
+ACTIVE_PID=""
+WATCHDOG_PID=""
 
 mkdir -p "${HOME}/Library/Logs"
-exec >>"${RUN_LOG}" 2>&1
+# Show progress in Terminal and preserve the same output in the LaunchAgent log.
+exec > >(/usr/bin/tee -a "${RUN_LOG}") 2>&1
 echo "---- ${TS} start ----"
+echo "ROOT=${ROOT}"
 
 export GIT_TERMINAL_PROMPT=0
-export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=20 -i ${HOME}/.ssh/id_ed25519_fatburn -o IdentitiesOnly=yes"
+export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=2 -i ${HOME}/.ssh/id_ed25519_fatburn -o IdentitiesOnly=yes"
 
-if [[ ! -d "${LOCAL_ROOT}/.git" ]]; then
-  echo "ERROR: local repo missing: ${LOCAL_ROOT}"
+cleanup_children() {
+  if [[ -n "${WATCHDOG_PID}" ]] && kill -0 "${WATCHDOG_PID}" 2>/dev/null; then
+    kill "${WATCHDOG_PID}" 2>/dev/null || true
+  fi
+  if [[ -n "${ACTIVE_PID}" ]] && kill -0 "${ACTIVE_PID}" 2>/dev/null; then
+    kill -TERM "${ACTIVE_PID}" 2>/dev/null || true
+  fi
+}
+trap cleanup_children EXIT
+trap 'cleanup_children; exit 130' INT TERM
+
+run_timed() {
+  local seconds="$1"
+  local label="$2"
+  local status
+  shift 2
+
+  echo "STEP: ${label} (timeout ${seconds}s)"
+  "$@" &
+  ACTIVE_PID=$!
+  (
+    sleep "${seconds}"
+    if kill -0 "${ACTIVE_PID}" 2>/dev/null; then
+      echo "TIMEOUT: ${label} exceeded ${seconds}s"
+      kill -TERM "${ACTIVE_PID}" 2>/dev/null || true
+    fi
+  ) &
+  WATCHDOG_PID=$!
+
+  set +e
+  wait "${ACTIVE_PID}"
+  status=$?
+  set -e
+
+  kill "${WATCHDOG_PID}" 2>/dev/null || true
+  wait "${WATCHDOG_PID}" 2>/dev/null || true
+  ACTIVE_PID=""
+  WATCHDOG_PID=""
+
+  if [[ "${status}" -eq 0 ]]; then
+    echo "OK: ${label}"
+  else
+    echo "FAILED: ${label} (exit ${status})"
+  fi
+  return "${status}"
+}
+
+if [[ ! -d "${ROOT}/.git" ]]; then
+  echo "ERROR: git repo missing at ${ROOT}"
+  echo "Move the workspace into Google Drive (see docs/GOOGLE_DRIVE_WORKSPACE.md)."
   exit 1
 fi
 
-"${GIT}" -C "${LOCAL_ROOT}" fetch origin 2>/dev/null || true
-"${GIT}" -C "${LOCAL_ROOT}" checkout main 2>/dev/null || true
-"${GIT}" -C "${LOCAL_ROOT}" pull --ff-only origin main 2>/dev/null || true
+# Probe Drive readability without cd'ing into the cloud path (TCC-safe).
+if ! "${GIT}" -C "${ROOT}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "ERROR: cannot read git repo via git -C (macOS TCC or Drive offline?)."
+  echo "Grant Full Disk Access to /bin/bash, open the folder in Finder once, retry."
+  exit 1
+fi
 
-"${GIT}" -C "${LOCAL_ROOT}" add -- \
+if ! run_timed 90 "git fetch origin" \
+  "${GIT}" -C "${ROOT}" fetch origin
+then
+  echo "WARNING: fetch failed; continuing with the local checkout."
+fi
+
+if ! run_timed 30 "git checkout main" \
+  "${GIT}" -C "${ROOT}" checkout main
+then
+  echo "ERROR: cannot switch to main; resolve local changes first."
+  exit 1
+fi
+
+if ! run_timed 90 "git pull --ff-only origin main" \
+  "${GIT}" -C "${ROOT}" pull --ff-only origin main
+then
+  echo "WARNING: pull failed; continuing so new screenshots can still be committed."
+fi
+
+if ! run_timed 180 "stage logs from Google Drive" \
+  "${GIT}" -C "${ROOT}" add -- \
   "logs/Withings" "logs/Garmin" "logs/Whoop" "logs/meals" "logs/training" "logs/plans" \
-  "logs/daily_log.csv" "logs/weekly_review.csv" \
-  || true
+  "logs/daily_log.csv" "logs/weekly_review.csv"
+then
+  echo "ERROR: git add failed — Drive path may be blocked or files not downloaded."
+  exit 1
+fi
 
-if "${GIT}" -C "${LOCAL_ROOT}" diff --cached --quiet; then
+if "${GIT}" -C "${ROOT}" diff --cached --quiet; then
   echo "Nothing to commit."
-  UNTRACKED="$("${GIT}" -C "${LOCAL_ROOT}" ls-files --others --exclude-standard -- "logs/" | head -20 || true)"
+  UNTRACKED="$("${GIT}" -C "${ROOT}" ls-files --others --exclude-standard -- "logs/" | head -20 || true)"
   if [[ -n "${UNTRACKED}" ]]; then
     echo "WARNING: untracked remain:"
     echo "${UNTRACKED}"
@@ -44,9 +164,16 @@ if "${GIT}" -C "${LOCAL_ROOT}" diff --cached --quiet; then
 fi
 
 MSG="chore: sync screenshots, plans, and CSV for ${DATE_ET}"
-"${GIT}" -C "${LOCAL_ROOT}" commit -m "${MSG}"
+if ! run_timed 60 "commit logs" \
+  "${GIT}" -C "${ROOT}" commit -m "${MSG}"
+then
+  echo "ERROR: commit failed"
+  exit 1
+fi
 
-if ! "${GIT}" -C "${LOCAL_ROOT}" push origin HEAD; then
+if ! run_timed 120 "push logs to GitHub" \
+  "${GIT}" -C "${ROOT}" push origin HEAD
+then
   echo "ERROR: push failed"
   exit 1
 fi
