@@ -24,11 +24,12 @@
 4. **Instructions：** 粘贴 [`AUTOMATION_PROMPT.md`](./AUTOMATION_PROMPT.md) 全文  
    详细规则在 [`DAILY_EMAIL_AUTOMATION.md`](./DAILY_EMAIL_AUTOMATION.md)
 5. **Tools：** 保持默认即可（需 git push；不必开 Slack）。PR 创建可关——日常应直接 commit/push `main` 上的 logs，不必每次开 PR。
-6. **Secrets**（Cloud Agents 环境）：确认已有  
-   - `GMAIL_USER` = `pwyw000@gmail.com`  
-   - `GMAIL_APP_PASSWORD` = Google 应用专用密码  
-   - 可选 `EMAIL_TO` = `pwyw000@gmail.com`  
-   设置页：[Cloud Agents](https://cursor.com/dashboard?tab=cloud-agents)
+6. **Secrets（不在 Automations 页）**  
+   Automations 编辑页**没有** Secrets 入口。密钥在 Cloud Agents：  
+   - 打开 [Cloud Agents dashboard](https://cursor.com/dashboard/cloud-agents)  
+   - 找 **Secrets** 标签（或进入本仓库环境：[Fat_burn environment](https://cursor.com/dashboard/cloud-agents/environments/r/github.com/pwyw000/fat_burn_2026_summer) 再找 Secrets / Environment variables）  
+   - 需要：`GMAIL_USER`、`GMAIL_APP_PASSWORD`（Runtime Secret）、可选 `EMAIL_TO`  
+   - 本仓库环境里这三项**已经配置过**（近期 Agent 已成功发信）；若页面上仍看不到 Secrets，多半是 UI 权限/入口问题，一般**不必重加**也能发信  
 7. **Save → Enable**，点一次 **Run now** 做冒烟测试。
 
 ## `/automate` 一句话（本机会话）
