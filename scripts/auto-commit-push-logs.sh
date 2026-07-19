@@ -52,14 +52,64 @@ RUN_LOG="${HOME}/Library/Logs/fatburn-autopush.log"
 GIT="/usr/bin/git"
 DATE_ET="$(TZ=America/New_York /bin/date '+%Y-%m-%d')"
 TS="$(TZ=America/New_York /bin/date '+%Y-%m-%d %H:%M:%S %Z')"
+ACTIVE_PID=""
+WATCHDOG_PID=""
 
 mkdir -p "${HOME}/Library/Logs"
-exec >>"${RUN_LOG}" 2>&1
+# Show progress in Terminal and preserve the same output in the LaunchAgent log.
+exec > >(/usr/bin/tee -a "${RUN_LOG}") 2>&1
 echo "---- ${TS} start ----"
 echo "ROOT=${ROOT}"
 
 export GIT_TERMINAL_PROMPT=0
-export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=20 -i ${HOME}/.ssh/id_ed25519_fatburn -o IdentitiesOnly=yes"
+export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=2 -i ${HOME}/.ssh/id_ed25519_fatburn -o IdentitiesOnly=yes"
+
+cleanup_children() {
+  if [[ -n "${WATCHDOG_PID}" ]] && kill -0 "${WATCHDOG_PID}" 2>/dev/null; then
+    kill "${WATCHDOG_PID}" 2>/dev/null || true
+  fi
+  if [[ -n "${ACTIVE_PID}" ]] && kill -0 "${ACTIVE_PID}" 2>/dev/null; then
+    kill -TERM "${ACTIVE_PID}" 2>/dev/null || true
+  fi
+}
+trap cleanup_children EXIT
+trap 'cleanup_children; exit 130' INT TERM
+
+run_timed() {
+  local seconds="$1"
+  local label="$2"
+  local status
+  shift 2
+
+  echo "STEP: ${label} (timeout ${seconds}s)"
+  "$@" &
+  ACTIVE_PID=$!
+  (
+    sleep "${seconds}"
+    if kill -0 "${ACTIVE_PID}" 2>/dev/null; then
+      echo "TIMEOUT: ${label} exceeded ${seconds}s"
+      kill -TERM "${ACTIVE_PID}" 2>/dev/null || true
+    fi
+  ) &
+  WATCHDOG_PID=$!
+
+  set +e
+  wait "${ACTIVE_PID}"
+  status=$?
+  set -e
+
+  kill "${WATCHDOG_PID}" 2>/dev/null || true
+  wait "${WATCHDOG_PID}" 2>/dev/null || true
+  ACTIVE_PID=""
+  WATCHDOG_PID=""
+
+  if [[ "${status}" -eq 0 ]]; then
+    echo "OK: ${label}"
+  else
+    echo "FAILED: ${label} (exit ${status})"
+  fi
+  return "${status}"
+}
 
 if [[ ! -d "${ROOT}/.git" ]]; then
   echo "ERROR: git repo missing at ${ROOT}"
@@ -74,14 +124,27 @@ if ! "${GIT}" -C "${ROOT}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   exit 1
 fi
 
-# Nudge Google Drive to materialize logs if placeholders are online-only.
-/usr/bin/find "${ROOT}/logs" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -print -quit >/dev/null 2>&1 || true
+if ! run_timed 90 "git fetch origin" \
+  "${GIT}" -C "${ROOT}" fetch origin
+then
+  echo "WARNING: fetch failed; continuing with the local checkout."
+fi
 
-"${GIT}" -C "${ROOT}" fetch origin 2>/dev/null || true
-"${GIT}" -C "${ROOT}" checkout main 2>/dev/null || true
-"${GIT}" -C "${ROOT}" pull --ff-only origin main 2>/dev/null || true
+if ! run_timed 30 "git checkout main" \
+  "${GIT}" -C "${ROOT}" checkout main
+then
+  echo "ERROR: cannot switch to main; resolve local changes first."
+  exit 1
+fi
 
-if ! "${GIT}" -C "${ROOT}" add -- \
+if ! run_timed 90 "git pull --ff-only origin main" \
+  "${GIT}" -C "${ROOT}" pull --ff-only origin main
+then
+  echo "WARNING: pull failed; continuing so new screenshots can still be committed."
+fi
+
+if ! run_timed 180 "stage logs from Google Drive" \
+  "${GIT}" -C "${ROOT}" add -- \
   "logs/Withings" "logs/Garmin" "logs/Whoop" "logs/meals" "logs/training" "logs/plans" \
   "logs/daily_log.csv" "logs/weekly_review.csv"
 then
@@ -101,9 +164,16 @@ if "${GIT}" -C "${ROOT}" diff --cached --quiet; then
 fi
 
 MSG="chore: sync screenshots, plans, and CSV for ${DATE_ET}"
-"${GIT}" -C "${ROOT}" commit -m "${MSG}"
+if ! run_timed 60 "commit logs" \
+  "${GIT}" -C "${ROOT}" commit -m "${MSG}"
+then
+  echo "ERROR: commit failed"
+  exit 1
+fi
 
-if ! "${GIT}" -C "${ROOT}" push origin HEAD; then
+if ! run_timed 120 "push logs to GitHub" \
+  "${GIT}" -C "${ROOT}" push origin HEAD
+then
   echo "ERROR: push failed"
   exit 1
 fi
