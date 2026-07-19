@@ -1,6 +1,9 @@
 # Logs — 只上传截图
 
-本机工作区：`~/Fat_burn_2026_summer`（**不用 Google Drive**）。  
+工作区在 **iCloud Drive**：`Fat_burn_2026_summer`  
+（Mac：`~/Library/Mobile Documents/com~apple~CloudDocs/Fat_burn_2026_summer`）  
+iPhone：文件 App → iCloud 云盘 → 搜 `Fat_burn_2026_summer` → `logs/...`  
+
 你**只负责**把截图放进对应文件夹。CSV 与每日计划由早晨 Agent 自动维护。
 
 ## 文件夹（名称请保持一致，区分大小写）
