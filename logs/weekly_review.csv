@@ -1,2 +1,3 @@
 week_ending,weigh_ins,avg_weight_lb,avg_bmi,avg_body_fat_pct,delta_weight_lb,delta_fat_pct,resistance_sessions,cardio_sessions,case_code,decision,next_week_change
 2026-07-12,1,177.1,24.0,20.3,,,0-1 (plan screenshots only),1,baseline-week1,开局周日；有氧完成；MB Nutrition 20:15: 1900kcal 198g protein (protein_ok=yes); resistance unconfirmed,下周保持蛋白160-180g+每日Nutrition截图+阻力凑满4-5次；长跑日可略超App热量目标
+2026-07-19,6,177.5,24.1,19.9,0.4,-0.4,4,1,hold-fat-down,"相对7/12单次称重，周均体重+0.4 lb、体脂-0.4个百分点；最新体重175.4 lb；趋势向好但上周基准仅1次，保持不加缺口","只改今日主旋钮：补第5次短阻力并上传完成页；热量维持约2000-2200 kcal、蛋白160-180g"
