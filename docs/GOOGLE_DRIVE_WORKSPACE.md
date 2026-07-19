@@ -59,12 +59,47 @@ launchctl load "${HOME}/Library/LaunchAgents/com.fatburn.autopush.plist"
 
 建议把 `logs/Withings` 等子文件夹加星标，下次保存更快。
 
-## 读取 / LaunchAgent（下一步再细修）
+## 挪好后立刻验证（Mac）
 
-历史上 Google Drive 路径曾触发 macOS TCC，导致 LaunchAgent 读不到目录。当前策略：
+在仓库目录执行（或任意位置用绝对路径）：
+
+```bash
+bash "${HOME}/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer/scripts/verify-gdrive-workspace.sh"
+```
+
+应看到多项 `OK`。然后装脚本并冒烟推送：
+
+```bash
+DST="${HOME}/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer"
+
+mkdir -p "${HOME}/Library/Application Support/fatburn"
+cp "${DST}/scripts/auto-commit-push-logs.sh" \
+  "${HOME}/Library/Application Support/fatburn/auto-commit-push-logs.sh"
+chmod +x "${HOME}/Library/Application Support/fatburn/auto-commit-push-logs.sh"
+
+cp "${DST}/scripts/com.fatburn.autopush.plist" \
+  "${HOME}/Library/LaunchAgents/com.fatburn.autopush.plist"
+launchctl unload "${HOME}/Library/LaunchAgents/com.fatburn.autopush.plist" 2>/dev/null || true
+launchctl load "${HOME}/Library/LaunchAgents/com.fatburn.autopush.plist"
+
+bash "${HOME}/Library/Application Support/fatburn/auto-commit-push-logs.sh"
+tail -n 40 "${HOME}/Library/Logs/fatburn-autopush.log"
+```
+
+日志里应有 `ROOT=...GoogleDrive.../Fat_burn_2026_summer`，以及 `Pushed:` 或 `Nothing to commit.`
+
+## 读取 / LaunchAgent
+
+历史上 Google Drive 曾触发 macOS TCC，LaunchAgent 读不到目录。当前策略：
 
 - **仓库**在 Google Drive（方便手机上传）  
 - **autopush 脚本**在 `~/Library/Application Support/fatburn/`（本机）  
-- 脚本用 `git -C "...GoogleDrive.../Fat_burn_2026_summer"`，不把云盘当 cwd  
+- 脚本只用 `git -C`，不把云盘当 cwd  
 
-若早晨仍 push 失败：系统设置 → 隐私与安全性 → 完全磁盘访问权限，给 `/bin/bash`（或你的 Terminal）。日志：`~/Library/Logs/fatburn-autopush.log`。
+若验证/`git -C` 失败：
+
+1. 系统设置 → 隐私与安全性 → **完全磁盘访问权限** → 打开 `/bin/bash`  
+2. Finder 打开一次 `Fat_burn_2026_summer/logs`，等 Drive 下载完成  
+3. 再跑 `verify-gdrive-workspace.sh`  
+
+日志：`~/Library/Logs/fatburn-autopush.log`。

@@ -12,13 +12,23 @@ GDRIVE_ROOT="${HOME}/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive
 LOCAL_FALLBACK="${HOME}/Fat_burn_2026_summer"
 ICLOUD_FALLBACK="${HOME}/Library/Mobile Documents/com~apple~CloudDocs/Fat_burn_2026_summer"
 
-if [[ -d "${GDRIVE_ROOT}/.git" ]]; then
-  ROOT="${GDRIVE_ROOT}"
-elif [[ -d "${LOCAL_FALLBACK}/.git" ]]; then
-  ROOT="${LOCAL_FALLBACK}"
-elif [[ -d "${ICLOUD_FALLBACK}/.git" ]]; then
-  ROOT="${ICLOUD_FALLBACK}"
-else
+resolve_root() {
+  local candidate
+  for candidate in "${GDRIVE_ROOT}" "${LOCAL_FALLBACK}" "${ICLOUD_FALLBACK}"; do
+    # Resolve symlink (home shortcut) without requiring cwd inside Drive
+    if [[ -L "${candidate}" ]]; then
+      candidate="$(readlink "${candidate}" 2>/dev/null || true)"
+    fi
+    if [[ -n "${candidate}" && -d "${candidate}/.git" ]]; then
+      printf '%s' "${candidate}"
+      return 0
+    fi
+  done
+  return 1
+}
+
+ROOT="$(resolve_root || true)"
+if [[ -z "${ROOT}" ]]; then
   ROOT="${GDRIVE_ROOT}"
 fi
 
@@ -41,14 +51,27 @@ if [[ ! -d "${ROOT}/.git" ]]; then
   exit 1
 fi
 
+# Probe Drive readability without cd'ing into the cloud path (TCC-safe).
+if ! "${GIT}" -C "${ROOT}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "ERROR: cannot read git repo via git -C (macOS TCC or Drive offline?)."
+  echo "Grant Full Disk Access to /bin/bash, open the folder in Finder once, retry."
+  exit 1
+fi
+
+# Nudge Google Drive to materialize logs if placeholders are online-only.
+ /usr/bin/find "${ROOT}/logs" -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) -print -quit >/dev/null 2>&1 || true
+
 "${GIT}" -C "${ROOT}" fetch origin 2>/dev/null || true
 "${GIT}" -C "${ROOT}" checkout main 2>/dev/null || true
 "${GIT}" -C "${ROOT}" pull --ff-only origin main 2>/dev/null || true
 
-"${GIT}" -C "${ROOT}" add -- \
+if ! "${GIT}" -C "${ROOT}" add -- \
   "logs/Withings" "logs/Garmin" "logs/Whoop" "logs/meals" "logs/training" "logs/plans" \
-  "logs/daily_log.csv" "logs/weekly_review.csv" \
-  || true
+  "logs/daily_log.csv" "logs/weekly_review.csv"
+then
+  echo "ERROR: git add failed — Drive path may be blocked or files not downloaded."
+  exit 1
+fi
 
 if "${GIT}" -C "${ROOT}" diff --cached --quiet; then
   echo "Nothing to commit."
