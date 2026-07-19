@@ -40,7 +40,7 @@
 
 ## 本地对照
 
-本机 LaunchAgent 约 **07:45** 推截图（`scripts/auto-commit-push-logs.sh`），Automation **08:00** 读仓库发信——中间留约 15 分钟缓冲。
+本机 LaunchAgent 约 **07:55** 推截图（`~/Library/Application Support/fatburn/auto-commit-push-logs.sh`），Automation **08:00** 读仓库发信——中间留约几分钟缓冲。
 
 ## 验证清单
 
