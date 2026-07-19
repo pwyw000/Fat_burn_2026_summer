@@ -24,7 +24,7 @@ npm run send-email:dry
 npm run send-email
 ```
 
-Cloud Agent 需在 [Cloud Agents 设置](https://cursor.com/dashboard?tab=cloud-agents) 配置同名密钥：`GMAIL_USER`、`GMAIL_APP_PASSWORD`（可选 `EMAIL_TO`）。
+Cloud Agent 需在 [Cloud Agents 设置](https://cursor.com/dashboard/cloud-agents) 配置同名密钥：`GMAIL_USER`、`GMAIL_APP_PASSWORD`；建议 `EMAIL_TO=pwyw000+fatburn@gmail.com`（自己发给自己时，同址常只出现在「已发送」）。
 
 ## 目录
 
