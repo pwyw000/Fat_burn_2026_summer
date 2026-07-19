@@ -49,3 +49,13 @@
 - [ ] `logs/plans/YYYY-MM-DD.md` 已更新并推送  
 - [ ] 邮箱收到「减脂计划 · YYYY-MM-DD」  
 - [ ] 缺截图时邮件写明缺什么，未编造数字  
+
+## 测试显示 Succeeded 但收不到信
+
+Cursor **Succeeded** 只表示 Agent 跑完，不等于你在收件箱看到了邮件。
+
+1. 打开测试 run（例：https://cursor.com/agents/bc-ffb257d8-8d67-43f1-88bf-60dc1526fcf8）确认日志里有  
+   `Sent: <…> → pwyw000@gmail.com`  
+2. 在 Gmail 搜：`subject:减脂计划` 或看 **已发送**（自己发给自己时经常只在这里）  
+3. 建议在 Cloud Agents Secrets 把 `EMAIL_TO` 设为 **`pwyw000+fatburn@gmail.com`**（仍进同一收件箱，但更易出现在 Inbox）  
+4. Spam / Promotions 也查一下  

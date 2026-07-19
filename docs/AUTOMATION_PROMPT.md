@@ -15,14 +15,16 @@
 5. 生成 `logs/plans/YYYY-MM-DD.md`（日期 = 美东 America/New_York 当天），邮件第 1 节必须是 **「截至昨日减脂效果」**（饮食 / 有氧 / 阻力各点评好坏 + 今日优先弱项）。
 6. 饮食必须是可执行购物/装盘清单（克数/份数 + 估蛋白/热量 + 减脂友好调味）；禁止空泛口号。
 7. 提交并推送：`logs/daily_log.csv`、必要时 `logs/weekly_review.csv`、`logs/plans/YYYY-MM-DD.md`。
-8. 发信：
+8. 发信（必须真实发送，禁止只 dry-run 就结束）：
 
 ```bash
 npm install
 npm run send-email
 ```
 
-环境已配置密钥：`GMAIL_USER`、`GMAIL_APP_PASSWORD`（可选 `EMAIL_TO`）。缺密钥则停止并说明，不要假装已发送。
+环境已配置密钥：`GMAIL_USER`、`GMAIL_APP_PASSWORD`（可选 `EMAIL_TO`）。缺密钥则停止并说明，不要假装已发送。  
+最终回复必须粘贴 `npm run send-email` 的 stdout（含 `Sent: <messageId> → …`）。  
+注意：若 `from` 与 `to` 同为 `pwyw000@gmail.com`，Gmail 常只出现在 **已发送**，不一定进收件箱；优先用 `EMAIL_TO=pwyw000+fatburn@gmail.com`。
 
 ## 硬约束
 
