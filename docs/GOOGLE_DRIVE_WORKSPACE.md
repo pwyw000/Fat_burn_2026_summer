@@ -127,3 +127,34 @@ FATBURN_REPO="/把 Finder 里的文件夹拖到这里/" \
 3. 再跑 `verify-gdrive-workspace.sh`  
 
 日志：`~/Library/Logs/fatburn-autopush.log`。
+
+## 手动补推截图（错过 07:55 / push 卡住时）
+
+如果你在白天补传了截图（错过每天 07:55 的自动推送），或 `git push` / GitHub Desktop **一直卡住**，用下面这条**一次成功**的命令手动推。
+
+**为什么会卡：** remote 是 SSH（`git@github.com:...`）。手动 `git push` 走默认 SSH，会去试多把钥匙 / 等 passphrase / 等死连接，看起来像卡死。指定 autopush 用的那把已验证密钥，并加 `BatchMode=yes`（要么几秒成功、要么立即报错，绝不无限期干等）即可。
+
+```bash
+REPO="${HOME}/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer"
+DAY="$(TZ=America/New_York date +%Y-%m-%d)"   # 或手填，如 2026-07-21
+
+# 1) 确认截图确实在仓库里、且被 git 认到（应出现在 Untracked）
+ls "$REPO"/logs/*/ | grep "$DAY"
+git -C "$REPO" status --short
+
+# 2) 提交
+git -C "$REPO" add -A
+git -C "$REPO" commit -m "${DAY} screenshots" || echo "nothing to commit"
+
+# 3) 用已验证的密钥推到当天的新分支（不 pull、不合并、不弹编辑器）
+GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=20 -o IdentitiesOnly=yes -i ${HOME}/.ssh/id_ed25519_fatburn" \
+  git -C "$REPO" push origin "HEAD:cursor/mac-${DAY}-373f"
+```
+
+结果对照：
+
+- `* [new branch] ... -> cursor/mac-<日期>-373f` → **成功**。之后在 GitHub 把该分支合并进 `main` 即可。
+- `Connection timed out` → 当前网络封了 22 端口，改用 GitHub 的 443 通道（在上面 `GIT_SSH_COMMAND` 里追加 `-o HostName=ssh.github.com -o Port=443`）。
+- `Permission denied (publickey)` → 这把钥匙没被接受，改用带 token 的 https 推送。
+
+> 直接推到 `main` 常因本地落后而被拒（non-fast-forward），所以这里统一推到**当天新分支**再合并，最省事、最不易卡。
