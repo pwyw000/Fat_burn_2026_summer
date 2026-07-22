@@ -124,6 +124,14 @@ if ! "${GIT}" -C "${ROOT}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   exit 1
 fi
 
+# Google Drive's virtual filesystem (File Stream / FUSE) throws
+#   fatal: mmap failed: Resource deadlock avoided
+# when `git add` mmaps files to hash them. Stream large blobs instead of
+# mmap-ing them, and disable the threaded index preload. This is the root-cause
+# fix for the 07:55 autopush failing at the staging step.
+"${GIT}" -C "${ROOT}" config core.bigFileThreshold 1 || true
+"${GIT}" -C "${ROOT}" config core.preloadindex false || true
+
 if ! run_timed 90 "git fetch origin" \
   "${GIT}" -C "${ROOT}" fetch origin
 then
@@ -141,6 +149,16 @@ if ! run_timed 90 "git pull --ff-only origin main" \
   "${GIT}" -C "${ROOT}" pull --ff-only origin main
 then
   echo "WARNING: pull failed; continuing so new screenshots can still be committed."
+fi
+
+# Force Google Drive to materialize (download) every log file locally BEFORE
+# git touches it. A plain streaming read (cat) hydrates cloud placeholders
+# without mmap, so the later `git add` operates on local bytes and never hits
+# the mmap "Resource deadlock avoided" hydration deadlock.
+if ! run_timed 180 "hydrate Drive log files" \
+  /bin/bash -c '/usr/bin/find "'"${ROOT}"'/logs" -type f \( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.csv" -o -iname "*.md" \) -print0 | while IFS= read -r -d "" f; do /bin/cat "$f" > /dev/null 2>&1 || true; done'
+then
+  echo "WARNING: hydration step had trouble; continuing to staging anyway."
 fi
 
 if ! run_timed 180 "stage logs from Google Drive" \
