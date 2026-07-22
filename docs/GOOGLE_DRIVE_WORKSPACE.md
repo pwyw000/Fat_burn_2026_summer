@@ -127,3 +127,39 @@ FATBURN_REPO="/把 Finder 里的文件夹拖到这里/" \
 3. 再跑 `verify-gdrive-workspace.sh`  
 
 日志：`~/Library/Logs/fatburn-autopush.log`。
+
+## `git add` 报 `mmap failed: Resource deadlock avoided`
+
+**症状：** 每天 07:55 的 autopush 在日志里走到 `STEP: stage logs from Google Drive` 就失败：
+
+```text
+fatal: mmap failed: Resource deadlock avoided
+FAILED: stage logs from Google Drive (exit 128)
+```
+
+`launchctl list | grep fatburn` 显示任务**有加载**、但上次退出码非 0——说明定时任务在跑，只是每天都卡在 `git add` 这一步（所以截图一直没自动推上 GitHub）。
+
+**原因：** 仓库在 Google Drive（File Stream / FUSE 虚拟盘）。`git add` 会 `mmap` 文件来算哈希，而 Drive 在 mmap 触发按需下载时会返回 `EDEADLK`（资源死锁），大 PNG 尤其容易触发。与认证、网络无关。
+
+**修复（`scripts/auto-commit-push-logs.sh` 已内置，无需手动）：**
+
+1. `git config core.bigFileThreshold 1` —— 让 git 对大文件**流式写入、不走 mmap**。
+2. `git config core.preloadindex false` —— 关掉多线程索引预载。
+3. `git add` 前先 `cat` 每个 `logs/` 文件到 `/dev/null`，**强制 Drive 先把文件下载到本地**，这样后续 mmap 不再触发下载。
+
+**装新版脚本（把仓库里改好的脚本复制到本机运行位置）：**
+
+```bash
+DST="${HOME}/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer"
+cp "${DST}/scripts/auto-commit-push-logs.sh" \
+  "${HOME}/Library/Application Support/fatburn/auto-commit-push-logs.sh"
+chmod +x "${HOME}/Library/Application Support/fatburn/auto-commit-push-logs.sh"
+
+# 立即验证一次
+bash "${HOME}/Library/Application Support/fatburn/auto-commit-push-logs.sh"
+tail -n 40 "${HOME}/Library/Logs/fatburn-autopush.log"
+```
+
+日志里出现 `OK: stage logs from Google Drive` 与 `Pushed:`（或 `Nothing to commit.`）即修复成功。
+
+**兜底（万一仍失败）：** 在 Google Drive App 设置里对 `Cursor/Fat_burn_2026_summer` 选 **“可离线使用 / Available offline”**，让文件常驻本地，从源头避免 mmap 触发下载。
