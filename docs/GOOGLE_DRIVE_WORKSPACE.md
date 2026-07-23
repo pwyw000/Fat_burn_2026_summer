@@ -163,3 +163,28 @@ tail -n 40 "${HOME}/Library/Logs/fatburn-autopush.log"
 日志里出现 `OK: stage logs from Google Drive` 与 `Pushed:`（或 `Nothing to commit.`）即修复成功。
 
 **兜底（万一仍失败）：** 在 Google Drive App 设置里对 `Cursor/Fat_burn_2026_summer` 选 **“可离线使用 / Available offline”**，让文件常驻本地，从源头避免 mmap 触发下载。
+
+## 本地 main 与 origin/main 分叉（`fatal: Not possible to fast-forward`）
+
+**症状：** autopush 日志里 `git pull --ff-only origin main` 报：
+
+```text
+Your branch and 'origin/main' have diverged, and have N and M different commits each
+fatal: Not possible to fast-forward, aborting.
+```
+
+**原因：** 本机在 `main` 上直接提交截图，而 `origin/main` 是通过云端合并的 PR 前进的，两条历史岔开，无法快进。
+
+**脚本已自愈：** 新版 autopush 在 ff 失败时会自动改用 `git pull --no-rebase --no-edit`（合并）。截图的新增文件与远程的 CSV/计划改动不重叠，通常干净合并；真冲突时会 `merge --abort` 并告警，不会把仓库卡在半合并状态。
+
+**一次性把当前分叉理顺**（先在 GitHub 合并待处理 PR，使 `origin/main` 完整，再执行）：
+
+```bash
+REPO="${HOME}/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer"
+git -C "$REPO" fetch origin main
+git -C "$REPO" checkout main
+git -C "$REPO" merge --no-edit origin/main   # 或确认本地无独有内容后：git -C "$REPO" reset --hard origin/main
+git -C "$REPO" push origin main
+```
+
+之后本地与远程一致，autopush 每天即可正常 ff/合并并推送。
