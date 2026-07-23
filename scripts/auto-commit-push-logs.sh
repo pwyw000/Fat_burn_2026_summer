@@ -145,10 +145,22 @@ then
   exit 1
 fi
 
+# Normal case: fast-forward. If local main diverged from origin/main (e.g. the
+# cloud agent advanced origin/main via merged PRs while this machine committed
+# screenshots locally), fall back to a non-editing merge so the histories
+# reconcile automatically. Screenshot adds vs. remote CSV/plan edits don't
+# overlap, so this merges cleanly; on a real conflict we abort and warn instead
+# of leaving the repo mid-merge.
 if ! run_timed 90 "git pull --ff-only origin main" \
   "${GIT}" -C "${ROOT}" pull --ff-only origin main
 then
-  echo "WARNING: pull failed; continuing so new screenshots can still be committed."
+  echo "WARNING: ff-only pull failed (diverged); trying a merge."
+  if ! run_timed 90 "git pull --no-rebase --no-edit origin main" \
+    "${GIT}" -C "${ROOT}" pull --no-rebase --no-edit origin main
+  then
+    echo "WARNING: merge pull failed; aborting half-merge and continuing."
+    "${GIT}" -C "${ROOT}" merge --abort 2>/dev/null || true
+  fi
 fi
 
 # Force Google Drive to materialize (download) every log file locally BEFORE
