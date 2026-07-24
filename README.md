@@ -31,6 +31,7 @@ npm run send-email
 
 Cloud Agent 需在 [Cloud Agents 设置](https://cursor.com/dashboard?tab=cloud-agents) 配置同名密钥：`GMAIL_USER`、`GMAIL_APP_PASSWORD`（可选 `EMAIL_TO`）。
 
+**Cloud Agents 额度用尽时：** 按 [docs/MANUAL_SCREENSHOT_EMAIL.md](docs/MANUAL_SCREENSHOT_EMAIL.md) 手动上传截图并用本机 `npm run send-email` 发信（不依赖 Cloud Automation）。
 ## 目录
 
 | 路径 | 作用 |

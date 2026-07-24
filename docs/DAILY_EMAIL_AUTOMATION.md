@@ -3,6 +3,8 @@
 你只上传截图；本 Agent 负责 CSV + 可执行饮食计划 + 邮件。  
 触发时间：**美东每天 08:00**。
 
+> **额度用尽 / Automation 跑不了时：** 改走手动流程 → [MANUAL_SCREENSHOT_EMAIL.md](./MANUAL_SCREENSHOT_EMAIL.md)（上传截图 → 写 `logs/plans/` → 本机 `npm run send-email`）。
+
 ## 截图目录（必须用这些精确路径，区分大小写）
 
 云端 Linux **区分大小写**。仓库里实际目录是：
