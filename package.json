@@ -9,6 +9,6 @@
     "send-email:dry": "node scripts/send-fat-loss-email.mjs --dry-run"
   },
   "dependencies": {
-    "nodemailer": "^6.10.1"
+    "nodemailer": "^9.0.3"
   }
 }
