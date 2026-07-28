@@ -4,7 +4,7 @@
 （Mac：`~/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer`）  
 iPhone：**Google Drive App** → 搜 `Fat_burn_2026_summer` → `logs/...`  
 
-你**只负责**把截图放进对应文件夹。CSV 与每日计划由早晨 Agent 自动维护。
+你**只负责**把截图放进对应文件夹，然后**手动触发** Agent。CSV 与每日计划由 Agent 维护。
 
 ## 文件夹（名称请保持一致，区分大小写）
 
@@ -25,7 +25,7 @@ iPhone：**Google Drive App** → 搜 `Fat_burn_2026_summer` → `logs/...`
 4. 命名：优先保留 iPhone 默认 **`Screenshot YYYY-MM-DD at H.MM.SS AM|PM.png`**。  
 Agent **按文件名日期时间**归入日志日，不以 App 画面里的日期标签覆盖文件名。
 
-Agent 从该截图写入 `daily_log.csv` 的 `nutrition_*` 字段，并在邮件里对照目标（蛋白 160–180 g、热量按训练日档位）点评饮食好坏。
+Agent 从该截图写入 `daily_log.csv` 的 `nutrition_*` 字段，并在邮件里对照 **Slow Carb 目标**（蛋白 160–180 g；力量日 **§3.1 ~1,600** / 跑日 **§3.2 ~2,000** kcal）点评饮食好坏。
 
 ## Agent 自动维护
 
