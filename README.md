@@ -16,7 +16,12 @@ iPhone：**Google Drive App** → 我的云端硬盘 → `Cursor` → `Fat_burn_
 
 1. 截图放进对应文件夹（见 [logs/README.md](logs/README.md)）——**不用手改 CSV**；`meals/` 只放 **Muscle Booster Nutrition 标签页** 截图
 2. 阅读 [docs/WEEK1_PLAN.md](docs/WEEK1_PLAN.md)（BMR/TDEE、Slow Carb 食谱、周训练表）与 [docs/ADJUSTMENT_RULES.md](docs/ADJUSTMENT_RULES.md)
-3. **手动触发** Cursor Agent（见 [docs/DAILY_EMAIL_AUTOMATION.md](docs/DAILY_EMAIL_AUTOMATION.md)）
+3. **手动触发** Cursor Agent（见 [docs/DAILY_EMAIL_AUTOMATION.md](docs/DAILY_EMAIL_AUTOMATION.md)）生成计划后，本机一键推送/发信：
+   ```bash
+   npm run sync:all
+   # 或 Finder 双击 scripts/Sync\ Fat\ Burn.command
+   ```
+   SSH 推送故障说明见 [docs/GITHUB_PUSH.md](docs/GITHUB_PUSH.md)。
 4. 本机 LaunchAgent（可选）：**每天 07:55** 自动 push **截图 + `logs/plans/` + CSV** 到 GitHub
 
 ## 能量预算摘要（175.7 lb · 41 岁 · 6'0"）
@@ -43,4 +48,7 @@ iPhone：**Google Drive App** → 我的云端硬盘 → `Cursor` → `Fat_burn_
 | `logs/withings|garmin|whoop|meals|training/` | 分类截图 |
 | `logs/plans/` | 每日生成的计划正文 |
 | `scripts/send-fat-loss-email.mjs` | Gmail 发信 |
+| `scripts/sync-and-mail.sh` | **一键**推截图/文档 + 可选发邮件 |
+| `scripts/Sync Fat Burn.command` | Finder 双击入口（`--all`） |
+| `docs/GITHUB_PUSH.md` | SSH `Protocol not available` 根因与修复 |
 | `docs/` | 档案、Slow Carb 计划、调整规则 |

@@ -61,8 +61,20 @@ exec > >(/usr/bin/tee -a "${RUN_LOG}") 2>&1
 echo "---- ${TS} start ----"
 echo "ROOT=${ROOT}"
 
-export GIT_TERMINAL_PROMPT=0
-export GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=2 -i ${HOME}/.ssh/id_ed25519_fatburn -o IdentitiesOnly=yes"
+# Prefer github.com:22 + dedicated key; avoid ~/.ssh/config Host rewrite to
+# ssh.github.com:443 which fails in Cursor Agent as "Protocol not available".
+# See docs/GITHUB_PUSH.md.
+SCRIPT_DIR_FOR_SSH="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || true)"
+if [[ -f "${SCRIPT_DIR_FOR_SSH}/git-ssh-env.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "${SCRIPT_DIR_FOR_SSH}/git-ssh-env.sh"
+elif [[ -f "${HOME}/Library/Application Support/fatburn/git-ssh-env.sh" ]]; then
+  # shellcheck source=/dev/null
+  source "${HOME}/Library/Application Support/fatburn/git-ssh-env.sh"
+else
+  export GIT_TERMINAL_PROMPT=0
+  export GIT_SSH_COMMAND="/usr/bin/ssh -F /dev/null -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=2 -o StrictHostKeyChecking=accept-new -o HostName=github.com -p 22 -i ${HOME}/.ssh/id_ed25519_fatburn -o IdentitiesOnly=yes -o AddressFamily=inet"
+fi
 
 cleanup_children() {
   if [[ -n "${WATCHDOG_PID}" ]] && kill -0 "${WATCHDOG_PID}" 2>/dev/null; then

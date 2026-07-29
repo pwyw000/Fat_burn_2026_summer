@@ -25,10 +25,13 @@ github.com/pwyw000/Fat_burn_2026_summer (main)
 正确链路：
 
 ```text
-iPhone → Google Drive → Mac LaunchAgent 07:55 commit/push → GitHub main → Automation 08:00
+iPhone → Google Drive → Mac LaunchAgent 07:55 commit/push → GitHub main
+（或随时：scripts/sync-and-mail.sh / Sync Fat Burn.command）
 ```
 
-所以不用把 Automation Repo 改成 Google Drive；需要修的是 Mac 上的 autopush 脚本。
+SSH 推送失败（`Protocol not available`）见 [GITHUB_PUSH.md](GITHUB_PUSH.md)。
+
+所以不用把 Automation Repo 改成 Google Drive；需要修的是 Mac 上的 autopush / 一键脚本。
 
 ## 在 Mac 上挪一次（Terminal）
 

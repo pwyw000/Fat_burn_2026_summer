@@ -6,7 +6,10 @@
   "type": "module",
   "scripts": {
     "send-email": "node scripts/send-fat-loss-email.mjs",
-    "send-email:dry": "node scripts/send-fat-loss-email.mjs --dry-run"
+    "send-email:dry": "node scripts/send-fat-loss-email.mjs --dry-run",
+    "sync": "bash scripts/sync-and-mail.sh",
+    "sync:all": "bash scripts/sync-and-mail.sh --all",
+    "sync:email": "bash scripts/sync-and-mail.sh --email"
   },
   "dependencies": {
     "nodemailer": "^9.0.3"
