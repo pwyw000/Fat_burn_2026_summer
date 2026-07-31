@@ -1,0 +1,29 @@
+---
+description: 一键生成今日减脂计划并可选发邮件（用户说「今日计划」「生成计划」「发今日邮件」时执行）
+alwaysApply: true
+---
+
+# 今日计划一键流程
+
+当用户说以下任一句话时，**立刻执行完整流程**（不要只解释怎么做）：
+
+- 「今日计划」「生成计划」「一键生成计划」
+- 「发今日邮件」「今日计划并发邮件」
+- 「手动发送今日邮件」
+- **「计划上传邮件」** = **今日计划 + 上传 GitHub + 发邮件**（三步全做）
+
+## 必须做
+
+1. 读 `docs/PROFILE.md`、`docs/WEEK1_PLAN.md`、`docs/ADJUSTMENT_RULES.md`、`docs/DAILY_EMAIL_AUTOMATION.md`
+2. 扫描并**打开阅读** `logs/Withings|Garmin|Whoop|meals|training/` 今日与近 7 天截图（文件名日期优先）
+3. 更新 `logs/daily_log.csv`（周日加 `weekly_review.csv`）
+4. 按邮件模板写 `logs/plans/YYYY-MM-DD.md`（美东今天）
+   - 力量日套 `WEEK1_PLAN.md` §3.1；跑日套 §3.2；周六 Cheat
+   - Whoop 日常消耗 **2,100**；力量 **+100**；周赤字 ÷6（周六不计）
+5. 若用户要求发邮件 / 说「发邮件」/「计划上传邮件」→ 用 `.env` 跑 `node scripts/send-fat-loss-email.mjs`
+6. 若用户要求上传 / 说「计划上传邮件」→ `bash scripts/sync-and-mail.sh --docs`；SSH 见 `docs/GITHUB_PUSH.md`
+
+## 不要做
+
+- 不要只告诉用户去跑 `npm run send-email` 却不生成计划文件
+- 没有 `logs/plans/当天.md` 时发信会失败——必须先写计划
