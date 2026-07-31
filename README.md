@@ -25,8 +25,9 @@ iPhone：**Google Drive App** → 我的云端硬盘 → `Cursor` → `Fat_burn_
 | 你说 | Agent 会做 |
 |---|---|
 | **今日计划** | 读截图 → 写 CSV → 写 `logs/plans/今天.md` |
-| **今日计划并发邮件** | 上面全部 + 发 Gmail |
-| **今日计划 + 上传** | 上面 + `scripts/sync-and-mail.sh` 推 GitHub |
+| **今日计划并发邮件** | 上面 + 发 Gmail |
+| **今日计划 + 上传** | 计划 + 推 GitHub |
+| **计划上传邮件** | **计划 + 推 GitHub + 发邮件**（推荐） |
 
 规则已写在 `.cursor/rules/daily-plan.mdc`。
 
@@ -49,8 +50,9 @@ npm run sync:all
 | BMR | ≈ **1,740 kcal/日** |
 | 周目标 | **−1.75 lb/周**（≈ 1% 体重） |
 | Slow Carb 日赤字 | **÷6 ≈ 1,020 kcal**（周六 Cheat 不计） |
-| 力量日摄入 | ≈ **1,550–1,700 kcal** |
-| 跑步日摄入 | ≈ **2,000–2,150 kcal** |
+| Whoop 日常消耗 | **2,100 kcal** |
+| 力量日摄入 | ≈ **1,150–1,300 kcal** |
+| 跑步日摄入 | ≈ **1,700–1,900 kcal** |
 
 ## 本地试发邮件
 
