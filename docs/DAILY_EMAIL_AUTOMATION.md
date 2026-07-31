@@ -3,6 +3,18 @@
 你上传截图后 **手动触发** 本 Agent；Agent 负责 CSV + Slow Carb 饮食计划 + 训练安排 + 邮件。  
 **不依赖定时 Automation**；何时发信由你决定。
 
+## 一键触发口令（Cursor 聊天）
+
+| 你说 | 执行 |
+|---|---|
+| **今日计划** | 读截图 → CSV → `logs/plans/今天.md` |
+| **今日计划并发邮件** | 同上 + Gmail 发信 |
+| **今日计划 + 上传** | 同上 + `scripts/sync-and-mail.sh` 推 GitHub |
+
+> `npm run send-email` **不会**生成计划；若缺少 `logs/plans/YYYY-MM-DD.md` 会报错。先说「今日计划」再发信。
+
+详见 `.cursor/rules/daily-plan.mdc`。
+
 ## 截图目录（必须用这些精确路径，区分大小写）
 
 云端 Linux **区分大小写**。仓库里实际目录是：

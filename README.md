@@ -16,13 +16,31 @@ iPhone：**Google Drive App** → 我的云端硬盘 → `Cursor` → `Fat_burn_
 
 1. 截图放进对应文件夹（见 [logs/README.md](logs/README.md)）——**不用手改 CSV**；`meals/` 只放 **Muscle Booster Nutrition 标签页** 截图
 2. 阅读 [docs/WEEK1_PLAN.md](docs/WEEK1_PLAN.md)（BMR/TDEE、Slow Carb 食谱、周训练表）与 [docs/ADJUSTMENT_RULES.md](docs/ADJUSTMENT_RULES.md)
-3. **手动触发** Cursor Agent（见 [docs/DAILY_EMAIL_AUTOMATION.md](docs/DAILY_EMAIL_AUTOMATION.md)）生成计划后，本机一键推送/发信：
-   ```bash
-   npm run sync:all
-   # 或 Finder 双击 scripts/Sync\ Fat\ Burn.command
-   ```
-   SSH 推送故障说明见 [docs/GITHUB_PUSH.md](docs/GITHUB_PUSH.md)。
-4. 本机 LaunchAgent（可选）：**每天 07:55** 自动 push **截图 + `logs/plans/` + CSV** 到 GitHub
+## 一键生成今日计划（Cursor Agent）
+
+`npm run send-email` **只发信，不生成计划**。计划必须由 Agent 读截图后写出 `logs/plans/YYYY-MM-DD.md`。
+
+**在 Cursor 聊天里发一句即可：**
+
+| 你说 | Agent 会做 |
+|---|---|
+| **今日计划** | 读截图 → 写 CSV → 写 `logs/plans/今天.md` |
+| **今日计划并发邮件** | 上面全部 + 发 Gmail |
+| **今日计划 + 上传** | 上面 + `scripts/sync-and-mail.sh` 推 GitHub |
+
+规则已写在 `.cursor/rules/daily-plan.mdc`。
+
+**本机只发信（计划已存在时）：**
+
+```bash
+npm run send-email
+```
+
+**本机推截图 + 发信（不生成计划正文）：**
+
+```bash
+npm run sync:all
+```
 
 ## 能量预算摘要（175.7 lb · 41 岁 · 6'0"）
 
