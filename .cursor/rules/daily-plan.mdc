@@ -18,8 +18,9 @@ alwaysApply: true
 2. 扫描并**打开阅读** `logs/Withings|Garmin|Whoop|meals|training/` 今日与近 7 天截图（文件名日期优先）
 3. 更新 `logs/daily_log.csv`（周日加 `weekly_review.csv`）
 4. 按邮件模板写 `logs/plans/YYYY-MM-DD.md`（美东今天）
-   - 力量日套 `WEEK1_PLAN.md` §3.1；跑日套 §3.2；周六 Cheat
-   - Whoop 日常消耗 **2,100**；力量 **+100**；周赤字 ÷6（周六不计）
+   - 力量日套 `WEEK1_PLAN.md` §3.1（~1,700）；跑日套 §3.2（~2,200）；周六 Cheat + 餐前深蹲
+   - Whoop 日常消耗 **2,100**；力量 **+100**；周目标 **W×0.5%**；周赤字 ÷6（周六不计）
+   - 邮件训练段必须含 **本周课表整表** + 今日部位（一肩臂 / 二胸腹 / 四背+后束 / 五下肢）+ **20 min 超级组** + **午饭前优先**
 5. 若用户要求发邮件 / 说「发邮件」/「计划上传邮件」→ 用 `.env` 跑 `node scripts/send-fat-loss-email.mjs`
 6. 若用户要求上传 / 说「计划上传邮件」→ `bash scripts/sync-and-mail.sh --docs`；SSH 见 `docs/GITHUB_PUSH.md`
 

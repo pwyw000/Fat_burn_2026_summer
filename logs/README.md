@@ -25,7 +25,7 @@ iPhone：**Google Drive App** → 搜 `Fat_burn_2026_summer` → `logs/...`
 4. 命名：优先保留 iPhone 默认 **`Screenshot YYYY-MM-DD at H.MM.SS AM|PM.png`**。  
 Agent **按文件名日期时间**归入日志日，不以 App 画面里的日期标签覆盖文件名。
 
-Agent 从该截图写入 `daily_log.csv` 的 `nutrition_*` 字段，并在邮件里对照 **Slow Carb 目标**（蛋白 160–180 g；力量日 **§3.1 ~1,200** / 跑日 **§3.2 ~1,800**；Whoop 日常 **2,100**）点评饮食好坏。
+Agent 从该截图写入 `daily_log.csv` 的 `nutrition_*` 字段，并在邮件里对照 **Slow Carb 目标**（蛋白 160–180 g；力量日 **§3.1 ~1,700** / 跑日 **§3.2 ~2,200**；Whoop 日常 **2,100**）点评饮食好坏。
 
 ## Agent 自动维护
 

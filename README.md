@@ -2,10 +2,10 @@
 
 两月减脂追踪 + **手动触发每日邮件计划**。你把截图丢进 `logs/Withings|Garmin|Whoop|meals|training`，再手动触发 Agent；CSV 与当日计划由 Agent 维护，并可邮件推送到 `pwyw000@gmail.com`。
 
-**硬目标：** 每周约 **−1% 体重（以脂肪为主）**；体脂朝 **12%**；体重 **不得低于 160 lb**。
+**硬目标：** 每周约 **−0.5% 体重（以脂肪为主）**；体脂朝 **12%**；体重 **不得低于 160 lb**。
 
 **饮食：** **Slow Carb Diet** · **周六 Cheat Day**  
-**训练：** 周日 + 周三 **跑步** · Mon/Tue/Thu/Fri **力量（Muscle Booster）** · 周六 **休息**
+**训练：** 周日 + 周三 **跑步** · Mon 肩+臂 / Tue 胸+腹 / Thu 背+后束 / Fri 下肢（**20 min 超级组**）· 周六 **休息（Cheat 餐前深蹲）**
 
 **工作区（Google Drive，手机可存）：**  
 `~/Library/CloudStorage/GoogleDrive-pwyw000@gmail.com/My Drive/Cursor/Fat_burn_2026_summer`  
@@ -43,16 +43,16 @@ npm run send-email
 npm run sync:all
 ```
 
-## 能量预算摘要（175.7 lb · 41 岁 · 6'0"）
+## 能量预算摘要（169.6 lb · 41 岁 · 6'0"）
 
 | 项目 | 数值 |
 |---|---|
-| BMR | ≈ **1,740 kcal/日** |
-| 周目标 | **−1.75 lb/周**（≈ 1% 体重） |
-| Slow Carb 日赤字 | **÷6 ≈ 1,020 kcal**（周六 Cheat 不计） |
+| BMR | ≈ **1,715 kcal/日** |
+| 周目标 | **−0.85 lb/周**（≈ 0.5% 体重） |
+| Slow Carb 日赤字 | **÷6 ≈ 495 kcal**（周六 Cheat 不计） |
 | Whoop 日常消耗 | **2,100 kcal** |
-| 力量日摄入 | ≈ **1,150–1,300 kcal** |
-| 跑步日摄入 | ≈ **1,700–1,900 kcal** |
+| 力量日摄入 | ≈ **1,600–1,800 kcal** |
+| 跑步日摄入 | ≈ **2,150–2,350 kcal** |
 
 ## 本地试发邮件
 
@@ -71,4 +71,4 @@ npm run sync:all
 | `scripts/sync-and-mail.sh` | **一键**推截图/文档 + 可选发邮件 |
 | `scripts/Sync Fat Burn.command` | Finder 双击入口（`--all`） |
 | `docs/GITHUB_PUSH.md` | SSH `Protocol not available` 根因与修复 |
-| `docs/` | 档案、Slow Carb 计划、调整规则 |
+| `docs/` | 档案、Slow Carb 计划、调整规则、[进度复盘 2026-09-03](docs/PROGRESS_REVIEW_2026-09-03.md) |
